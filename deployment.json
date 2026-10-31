@@ -1,0 +1,26 @@
+{
+  "network": "testnet",
+  "owner": "jibsonfta.testnet",
+  "vault": "vault.jibsonfta.testnet",
+  "guardian": "guardian.jibsonfta.testnet",
+  "agent": "agent.jibsonfta.testnet",
+  "guardianPublicKey": "ed25519:29SQiUBFDGaDZ95K5HuXR13PDi1reNUbm1MYa4dL16kA",
+  "agentPublicKey": "ed25519:BKLJrUcUp6mZh32JrefEpuGVSz2dEzSezVUyAvkXcmMJ",
+  "agentKeyScope": {
+    "receiver": "vault.jibsonfta.testnet",
+    "methods": [
+      "request_payment"
+    ],
+    "allowanceNEAR": 0.25
+  },
+  "hardCaps": {
+    "perTxYocto": "3000000000000000000000000",
+    "dailyYocto": "6000000000000000000000000"
+  },
+  "wasmSha256": "ef78afe011afb3f5cb4aebad177ae9e1f153b7227c137f752103351ff48424e1",
+  "txs": {
+    "guardian": null,
+    "agent": null,
+    "vault": null
+  }
+}
