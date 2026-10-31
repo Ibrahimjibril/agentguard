@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --test src/policy/policy.test.ts"
+    "test": "node --test \"src/**/*.test.ts\"",
+    "compile": "node --env-file=.env scripts/compile-policy.ts"
   },
   "repository": {
     "type": "git",
