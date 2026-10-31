@@ -1,0 +1,23 @@
+[package]
+name = "agentguard-vault"
+version = "0.1.0"
+edition = "2021"
+description = "AgentGuard vault: holds funds for an AI agent; pays only after the guardian approves; enforces hard on-chain caps."
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "5"
+
+[dev-dependencies]
+near-sdk = { version = "5", features = ["unit-testing"] }
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true

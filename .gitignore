@@ -1,3 +1,6 @@
 .env
 .keys/
 node_modules/
+
+contract/target/
+contract/Cargo.lock
