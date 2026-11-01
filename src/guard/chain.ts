@@ -2,6 +2,7 @@
 import * as near from "@fastnear/api";
 import fs from "node:fs";
 import type { Chain, ChainResult, PendingReq } from "./guard.ts";
+import { findTx } from "./tx.ts";
 
 export function nearChain(dep: any, guardianPrivateKey: string): Chain {
   const signer = near.utils.signerFromPrivateKey(guardianPrivateKey);
@@ -15,7 +16,7 @@ export function nearChain(dep: any, guardianPrivateKey: string): Chain {
       const text = JSON.stringify(r);
       const panic = text.match(/Smart contract panicked: ([^"\\]+)/);
       const failed = panic || /"Failure"/.test(text);
-      return { ok: !failed, tx: r?.transaction?.hash ?? r?.transaction_outcome?.id ?? null, error: failed ? (panic?.[1]?.trim() ?? "transaction failed") : null };
+      return { ok: !failed, tx: findTx(r), error: failed ? (panic?.[1]?.trim() ?? "transaction failed") : null };
     } catch (e: any) {
       return { ok: false, tx: null, error: String(e?.message ?? e).slice(0, 200) };
     }

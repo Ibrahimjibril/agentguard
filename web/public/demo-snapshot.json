@@ -1,0 +1,235 @@
+{
+  "policy": {
+    "json": {
+      "version": 1,
+      "per_tx_limit": "2000000000000000000000000",
+      "daily_limit": "5000000000000000000000000",
+      "approval_threshold": "1500000000000000000000000",
+      "allowlist": [],
+      "allowlist_only": false,
+      "blocklist": [],
+      "risk_block_score": 70,
+      "risk_review_score": 40
+    },
+    "summary": [
+      "Max per payment: 2 NEAR",
+      "Max per day (UTC): 5 NEAR",
+      "Human approval above: 1.5 NEAR",
+      "Trusted accounts: (none)",
+      "Blocked accounts: (none)",
+      "Scam risk: ask human at 40+, block at 70+"
+    ],
+    "warnings": []
+  },
+  "decisions": [
+    {
+      "id": 7,
+      "to": "jibsonfta.testnet",
+      "amount": "1700000000000000000000000",
+      "amountNear": "1.7 NEAR",
+      "memo": "(d) large payment, needs a human",
+      "verdict": "ask",
+      "status": "awaiting_approval",
+      "reasons": [
+        {
+          "code": "APPROVAL_REQUIRED",
+          "verdict": "ask",
+          "message": "1.7 NEAR is above the approval threshold of 1.5 NEAR."
+        }
+      ],
+      "risk": {
+        "score": 0,
+        "reasons": [
+          "Destination is a trusted account."
+        ]
+      },
+      "tx": null,
+      "ts": 1793567207388,
+      "updated": 1793567207388
+    },
+    {
+      "id": 6,
+      "to": "jibsonfra.testnet",
+      "amount": "1000000000000000000000000",
+      "amountNear": "1 NEAR",
+      "memo": "(c) suspicious lookalike address",
+      "verdict": "block",
+      "status": "rejected",
+      "reasons": [
+        {
+          "code": "RISK_TOO_HIGH",
+          "verdict": "block",
+          "message": "Risk score 100 is at or above the block level 70."
+        }
+      ],
+      "risk": {
+        "score": 100,
+        "reasons": [
+          "Named account does not exist on chain (typo or throwaway address).",
+          "Looks like trusted account jibsonfta.testnet (differs by 1 character)."
+        ]
+      },
+      "tx": null,
+      "ts": 1793567192478,
+      "updated": 1793567192478
+    },
+    {
+      "id": 5,
+      "to": "jibsonfta.testnet",
+      "amount": "2500000000000000000000000",
+      "amountNear": "2.5 NEAR",
+      "memo": "(b) over-limit payment",
+      "verdict": "block",
+      "status": "rejected",
+      "reasons": [
+        {
+          "code": "OVER_PER_TX_LIMIT",
+          "verdict": "block",
+          "message": "2.5 NEAR exceeds the per-transaction limit of 2 NEAR."
+        },
+        {
+          "code": "APPROVAL_REQUIRED",
+          "verdict": "ask",
+          "message": "2.5 NEAR is above the approval threshold of 1.5 NEAR."
+        }
+      ],
+      "risk": {
+        "score": 0,
+        "reasons": [
+          "Destination is a trusted account."
+        ]
+      },
+      "tx": null,
+      "ts": 1793567186918,
+      "updated": 1793567186918
+    },
+    {
+      "id": 4,
+      "to": "jibsonfta.testnet",
+      "amount": "500000000000000000000000",
+      "amountNear": "0.5 NEAR",
+      "memo": "(a) legitimate payment",
+      "verdict": "allow",
+      "status": "paid",
+      "reasons": [
+        {
+          "code": "WITHIN_POLICY",
+          "verdict": "allow",
+          "message": "All policy checks passed."
+        }
+      ],
+      "risk": {
+        "score": 0,
+        "reasons": [
+          "Destination is a trusted account."
+        ]
+      },
+      "tx": null,
+      "ts": 1793567168698,
+      "updated": 1793567168698
+    },
+    {
+      "id": 3,
+      "to": "jibsonfra.testnet",
+      "amount": "1000000000000000000000000",
+      "amountNear": "1 NEAR",
+      "memo": "(c) suspicious lookalike address",
+      "verdict": "block",
+      "status": "rejected",
+      "reasons": [
+        {
+          "code": "RISK_TOO_HIGH",
+          "verdict": "block",
+          "message": "Risk score 100 is at or above the block level 70."
+        }
+      ],
+      "risk": {
+        "score": 100,
+        "reasons": [
+          "Named account does not exist on chain (typo or throwaway address).",
+          "Looks like trusted account jibsonfta.testnet (differs by 1 character)."
+        ]
+      },
+      "tx": null,
+      "ts": 1793501215022,
+      "updated": 1793501215022
+    },
+    {
+      "id": 2,
+      "to": "jibsonfta.testnet",
+      "amount": "2500000000000000000000000",
+      "amountNear": "2.5 NEAR",
+      "memo": "(b) over-limit payment",
+      "verdict": "block",
+      "status": "rejected",
+      "reasons": [
+        {
+          "code": "OVER_PER_TX_LIMIT",
+          "verdict": "block",
+          "message": "2.5 NEAR exceeds the per-transaction limit of 2 NEAR."
+        },
+        {
+          "code": "APPROVAL_REQUIRED",
+          "verdict": "ask",
+          "message": "2.5 NEAR is above the approval threshold of 1.5 NEAR."
+        }
+      ],
+      "risk": {
+        "score": 0,
+        "reasons": [
+          "Destination is a trusted account."
+        ]
+      },
+      "tx": null,
+      "ts": 1793501210234,
+      "updated": 1793501210234
+    },
+    {
+      "id": 1,
+      "to": "jibsonfta.testnet",
+      "amount": "1000000000000000000000000",
+      "amountNear": "1 NEAR",
+      "memo": "(a) legitimate payment",
+      "verdict": "allow",
+      "status": "paid",
+      "reasons": [
+        {
+          "code": "WITHIN_POLICY",
+          "verdict": "allow",
+          "message": "All policy checks passed."
+        }
+      ],
+      "risk": {
+        "score": 0,
+        "reasons": [
+          "Destination is a trusted account."
+        ]
+      },
+      "tx": null,
+      "ts": 1793501205294,
+      "updated": 1793501205294
+    }
+  ],
+  "awaiting": 1,
+  "vault": {
+    "vault": "vault.jibsonfta.testnet",
+    "agent": "agent.jibsonfta.testnet",
+    "guardian": "guardian.jibsonfta.testnet",
+    "owner": "jibsonfta.testnet",
+    "hardPerTx": "3 NEAR",
+    "hardDaily": "6 NEAR",
+    "hardPerTxNear": 3,
+    "hardDailyNear": 6,
+    "spentTodayNear": 1.5,
+    "balanceNear": 3.5,
+    "pendingOnChain": 1,
+    "totalRequests": 8
+  },
+  "llmConfigured": false,
+  "snapshot": {
+    "capturedAt": 1793567246848,
+    "network": "testnet",
+    "vault": "vault.jibsonfta.testnet",
+    "repo": "https://github.com/Ibrahimjibril/agentguard"
+  }
+}

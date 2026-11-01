@@ -11,9 +11,10 @@ const signer = near.utils.signerFromPrivateKey(key.privateKey);
 const Y = (n) => (BigInt(Math.round(n * 1000)) * 10n ** 21n).toString();
 
 const SCENARIOS = [
-  { label: "(a) legitimate payment", to: dep.owner, near: 1 },
+  { label: "(a) legitimate payment", to: dep.owner, near: 0.5 },
   { label: "(b) over-limit payment", to: dep.owner, near: 2.5 },
   { label: "(c) suspicious lookalike address", to: dep.owner.replace("jibsonfta", "jibsonfra"), near: 1 },
+  { label: "(d) large payment, needs a human", to: dep.owner, near: 1.7 },
 ];
 
 for (const s of SCENARIOS) {

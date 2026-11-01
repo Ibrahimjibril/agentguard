@@ -1,0 +1,21 @@
+{
+  "name": "agentguard-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AgentGuard dashboard: rules, live checkpoint log, approvals.",
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "16.4.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.0.0"
+  }
+}

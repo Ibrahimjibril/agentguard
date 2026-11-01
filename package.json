@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test \"src/**/*.test.ts\"",
-    "compile": "node --env-file=.env scripts/compile-policy.ts"
+    "compile": "node --env-file=.env scripts/compile-policy.ts",
+    "serve": "node --env-file=.env scripts/serve.ts"
   },
   "repository": {
     "type": "git",
