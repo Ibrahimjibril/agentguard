@@ -7,3 +7,4 @@ contract/Cargo.lock
 guard.db
 guard.log
 web.log
+artifacts/

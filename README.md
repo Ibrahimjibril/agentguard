@@ -35,14 +35,35 @@ The agent never holds a key that can send money. It can only **ask**. A separate
 
 ```mermaid
 flowchart LR
-  A["AI agent<br/>function-call key only"] -->|request_payment| V[("Vault contract<br/>hard on-chain caps")]
-  V -->|pending requests| G["Guard service<br/>policy + scam check"]
-  G -->|approve / reject<br/>guardian key| V
-  G --> L[("SQLite<br/>decision log")]
-  D["Dashboard<br/>Next.js"] <-->|local API 127.0.0.1| G
+  A["AI agent: function-call key only"] -->|request_payment| V["Vault contract: hard on-chain caps"]
+  V -->|pending requests| G["Guard: policy and scam check"]
+  G -->|approve or reject| V
+  G --> L["SQLite decision log"]
+  D["Dashboard: Next.js"] <-->|local API| G
   U["You"] -->|rules in plain language| D
   M["LLM"] -.->|drafts rule JSON only| D
 ```
+
+<details>
+<summary>Same diagram as text</summary>
+
+```
+ AI agent (function-call key only)
+        | request_payment (can only ask)
+        v
+ Vault contract (hard on-chain caps, no keys) <----------------+
+        | pending requests                                       | approve / reject
+        v                                                        | (guardian key)
+ Guard: policy checker + scam check ---------------------------+
+        | decision + reasons
+        v
+ SQLite decision log  <---- local API (127.0.0.1) ----> Dashboard (Next.js) <--- You: rules in plain language
+                                                              ^
+                                                              | drafts rule JSON only
+                                                             LLM
+```
+
+</details>
 
 | Actor | Key it holds | Can | Cannot |
 | --- | --- | --- | --- |
@@ -50,6 +71,17 @@ flowchart LR
 | Vault | none | hold funds, enforce caps, pay after approval | be drained except through its own methods |
 | Guardian (the Guard service) | full-access key of `guardian.<owner>` | approve or reject, within the on-chain caps | exceed the on-chain caps |
 | Owner (you) | owner key | change caps, rotate guardian, withdraw | |
+
+## Who uses this, and how
+
+AgentGuard is **self-hosted**: you run the Guard and the dashboard on your own machine, and your keys never leave it. There is no hosted multi-user service, no sign-up and no wallet connection in the dashboard yet. The hosted site is a read-only replay of a real run.
+
+To protect your own agent:
+
+1. Deploy a sandbox with the steps in section C below (it creates the vault, the guardian and the agent accounts).
+2. Give your agent two things: the vault address (`vault.<owner>.testnet`) and the agent key file (`.keys/agent.<owner>.testnet.json`). That key can only call `request_payment` on the vault.
+3. Your agent calls `request_payment(to, amount, memo)` instead of sending money itself. `scripts/agent-demo.mjs` is a working example.
+4. You set the rules and approve big payments in the dashboard.
 
 ## Try it
 
