@@ -49,7 +49,7 @@ export function Rules({ state, onChanged, notify }: Props) {
 
   const active = state?.policy ?? null;
   return (
-    <aside className="card rules" aria-labelledby="rules-title">
+    <aside className="card rules" id="rules" aria-labelledby="rules-title">
       <h2 id="rules-title">Your rules</h2>
       {active ? (
         <ul className="rule-list">
@@ -69,7 +69,7 @@ export function Rules({ state, onChanged, notify }: Props) {
         placeholder="No more than 2 NEAR per payment and 5 NEAR a day. Ask me above 1.5 NEAR."
       />
       <div className="actions">
-        <button className="btn btn-primary" disabled={busy || isDemo || text.trim().length === 0 || state?.llmConfigured === false} onClick={makeDraft}>
+        <button className="btn btn-accent" disabled={busy || isDemo || text.trim().length === 0 || state?.llmConfigured === false} onClick={makeDraft}>
           {busy && !draft ? "Drafting…" : "Draft rules"}
         </button>
       </div>

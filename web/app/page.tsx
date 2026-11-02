@@ -4,10 +4,13 @@ import { API_BASE, decide, getState, isDemo } from "../lib/api";
 import type { State } from "../lib/api";
 import { nearFmt, yoctoToNear } from "../lib/format";
 import { Logo } from "../components/Logo";
+import { GateArt } from "../components/GateArt";
 import { Meter } from "../components/Meter";
 import { NeedsYou } from "../components/NeedsYou";
 import { Log } from "../components/Log";
 import { Rules } from "../components/Rules";
+
+const REPO = "https://github.com/Ibrahimjibril/agentguard";
 
 export default function Page() {
   const [state, setState] = useState<State | null>(null);
@@ -66,6 +69,23 @@ export default function Page() {
         </div>
       </header>
 
+      <section className="hero-grid">
+        <div className="hero-copy">
+          <p className="eyebrow"><span className="eyebrow-dot" />AI agent security on NEAR</p>
+          <h1>Your agent can ask.<br /><em>The gate decides.</em></h1>
+          <p className="lead">
+            Give an AI agent money without giving it your keys. Every payment passes your rules, a scam check and the vault’s own on-chain limits before anything moves.
+          </p>
+          <div className="hero-cta">
+            <a className="btn btn-accent" href={isDemo ? (state?.snapshot?.repo ?? REPO) : "#rules"} target={isDemo ? "_blank" : undefined} rel={isDemo ? "noreferrer" : undefined}>
+              {isDemo ? "Run it yourself" : "Write your rules"}
+            </a>
+            <a className="link-quiet" href="#log">See the decisions</a>
+          </div>
+        </div>
+        <GateArt />
+      </section>
+
       {isDemo && state?.snapshot && (
         <div className="banner banner-info" role="note">
           <b>Recorded demo.</b> These are real decisions from a live NEAR testnet run on{" "}
@@ -82,11 +102,11 @@ export default function Page() {
 
       <div className="layout">
         <main className="col-main">
-          <section className="card hero">
-            <h1>Your agent can ask.<br />The gate decides.</h1>
-            <p className="lead">
-              Every payment passes your rules, a scam check and the vault’s own limits before any money moves.
-            </p>
+          <section className="card vault">
+            <div className="vault-head">
+              <h2>The vault</h2>
+              {vault && <span className="pill">{vault.vault}</span>}
+            </div>
             {vault ? (
               <>
                 <div className="stats">
@@ -113,7 +133,7 @@ export default function Page() {
 
           <NeedsYou items={waiting} busyId={busyId} onDecide={onDecide} />
 
-          <div className="sec-title">
+          <div className="sec-title" id="log">
             <h2>Checkpoint log</h2>
             <span className="count">{decisions.length} decisions</span>
           </div>
