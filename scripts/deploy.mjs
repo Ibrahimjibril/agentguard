@@ -35,9 +35,9 @@ function findWasm(dir) {
   }
   return null;
 }
-const wasmPath = fs.existsSync("artifacts") ? findWasm("artifacts") : null;
+const wasmPath = ["contract/prebuilt", "artifacts"].filter((d) => fs.existsSync(d)).map(findWasm).find(Boolean) ?? null;
 if (!wasmPath) {
-  console.error("No .wasm found in ./artifacts. Download it with gh run download first.");
+  console.error("No .wasm found. Use contract/prebuilt/agentguard_vault.wasm (included), or build with cargo near build non-reproducible-wasm --no-abi.");
   process.exit(1);
 }
 const wasm = fs.readFileSync(wasmPath);

@@ -1,7 +1,7 @@
 {
   "name": "agentguard",
   "version": "1.0.0",
-  "description": "",
+  "description": "Let an AI agent spend crypto on NEAR without a key that can move your money",
   "main": "index.js",
   "scripts": {
     "test": "node --test \"src/**/*.test.ts\"",
@@ -14,7 +14,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "bugs": {
     "url": "https://github.com/Ibrahimjibril/near-hackathon/issues"
@@ -22,5 +22,8 @@
   "homepage": "https://github.com/Ibrahimjibril/near-hackathon#readme",
   "dependencies": {
     "@fastnear/api": "^2.5.0"
+  },
+  "engines": {
+    "node": ">=22.13"
   }
 }

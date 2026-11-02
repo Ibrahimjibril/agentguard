@@ -10,10 +10,20 @@ near.config({ networkId: "testnet" });
 const signer = near.utils.signerFromPrivateKey(key.privateKey);
 const Y = (n) => (BigInt(Math.round(n * 1000)) * 10n ** 21n).toString();
 
+// A lookalike of the owner's account: the last two characters swapped (or the last one changed).
+function lookalike(id) {
+  const [name, ...rest] = id.split(".");
+  const a = name.split("");
+  const i = a.length - 1;
+  if (a[i] === a[i - 1]) a[i] = a[i] === "x" ? "y" : "x";
+  else [a[i - 1], a[i]] = [a[i], a[i - 1]];
+  return [a.join(""), ...rest].join(".");
+}
+
 const SCENARIOS = [
   { label: "(a) legitimate payment", to: dep.owner, near: 0.5 },
   { label: "(b) over-limit payment", to: dep.owner, near: 2.5 },
-  { label: "(c) suspicious lookalike address", to: dep.owner.replace("jibsonfta", "jibsonfra"), near: 1 },
+  { label: "(c) suspicious lookalike address", to: lookalike(dep.owner), near: 1 },
   { label: "(d) large payment, needs a human", to: dep.owner, near: 1.7 },
 ];
 
