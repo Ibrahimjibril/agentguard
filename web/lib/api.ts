@@ -76,7 +76,11 @@ export async function getState(): Promise<State> {
   return r.body as State;
 }
 
-export async function draftRules(text: string): Promise<{ ok: true; draft: Draft } | { ok: false; error: string }> {
+// Result shapes use optional fields (not unions) so they type-check the same in strict and non-strict builds.
+export interface DraftResult { ok: boolean; draft?: Draft; error?: string }
+export interface ActivateResult { ok: boolean; needsConfirmation?: boolean; error?: string }
+
+export async function draftRules(text: string): Promise<DraftResult> {
   if (isDemo) return { ok: false, error: DEMO_MSG };
   const r = await request("/api/policy/compile", "POST", { text });
   if (r.status === 200 && r.body?.ok) return { ok: true, draft: r.body as Draft };
@@ -84,10 +88,7 @@ export async function draftRules(text: string): Promise<{ ok: true; draft: Draft
   return { ok: false, error: detail ?? "Could not draft rules." };
 }
 
-export async function activateRules(
-  policy: PolicyJson,
-  confirmUnlimited: boolean,
-): Promise<{ ok: true } | { ok: false; needsConfirmation: boolean; error: string }> {
+export async function activateRules(policy: PolicyJson, confirmUnlimited: boolean): Promise<ActivateResult> {
   if (isDemo) return { ok: false, needsConfirmation: false, error: DEMO_MSG };
   const r = await request("/api/policy/activate", "POST", { policy, confirmUnlimited });
   if (r.status === 200) return { ok: true };

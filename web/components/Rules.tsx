@@ -21,7 +21,7 @@ export function Rules({ state, onChanged, notify }: Props) {
     setBusy(true); setError(null); setDraft(null); setConfirmed(false);
     try {
       const r = await draftRules(text);
-      if (r.ok) setDraft(r.draft); else setError(r.error);
+      if (r.ok && r.draft) setDraft(r.draft); else setError(r.error ?? "Could not draft rules.");
     } catch {
       setError("Could not reach the Guard.");
     }
@@ -39,7 +39,7 @@ export function Rules({ state, onChanged, notify }: Props) {
       } else if (r.needsConfirmation) {
         setConfirmOpen(true);
       } else {
-        setError(r.error);
+        setError(r.error ?? "Could not activate rules.");
       }
     } catch {
       setError("Could not reach the Guard.");
