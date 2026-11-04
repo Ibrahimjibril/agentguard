@@ -98,8 +98,8 @@ export default function Page() {
 
       {isDemo && state?.snapshot && (
         <div className="banner banner-info" role="note">
-          <b>Recorded demo.</b> These are real decisions from a live NEAR testnet run on{" "}
-          {new Date(state.snapshot.capturedAt).toLocaleDateString()}. To approve payments and write rules,{" "}
+          <b>Recorded log, live checker.</b> The decisions below are real ones from a NEAR testnet run on{" "}
+          {new Date(state.snapshot.capturedAt).toLocaleDateString()}. Want to try your own payment? Scroll to <a className="link" href="#playground">Try the gate</a>. To approve payments and write rules,{" "}
           <a className="link" href={`${state.snapshot.repo}#try-it`} target="_blank" rel="noreferrer">run AgentGuard yourself</a>.
         </div>
       )}
