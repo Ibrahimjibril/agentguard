@@ -8,3 +8,4 @@ guard.db
 guard.log
 web.log
 artifacts/
+deployment.json

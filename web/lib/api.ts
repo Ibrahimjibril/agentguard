@@ -104,3 +104,33 @@ export async function decide(id: number, approve: boolean): Promise<{ ok: boolea
   const r = await request(`/api/decisions/${id}/${approve ? "approve" : "reject"}`, "POST", {});
   return r.status === 200 ? { ok: true } : { ok: false, error: r.body?.error ?? "Request failed." };
 }
+
+// ---- sandbox setup (the dashboard creates the accounts for you) ----
+export type Stage = "no_owner" | "owner_ready" | "deployed";
+export interface SetupStatus {
+  ok: boolean;
+  stage: Stage;
+  owner?: string;
+  vault?: string;
+  agent?: string;
+  guardian?: string;
+  agentKeyFile?: string;
+  llmConfigured?: boolean;
+}
+
+export async function getSetup(): Promise<SetupStatus> {
+  if (isDemo) return { ok: true, stage: "deployed" };
+  const r = await request("/api/setup");
+  if (r.status !== 200) throw new Error(r.body?.error ?? `Guard answered ${r.status}`);
+  return r.body as SetupStatus;
+}
+
+export async function createOwner(name: string): Promise<{ ok: boolean; owner?: string; error?: string }> {
+  const r = await request("/api/setup/owner", "POST", { name });
+  return r.status === 200 ? { ok: true, owner: r.body.owner } : { ok: false, error: r.body?.error ?? "Could not create the account." };
+}
+
+export async function deploySandbox(): Promise<{ ok: boolean; error?: string }> {
+  const r = await request("/api/setup/deploy", "POST", {});
+  return r.status === 200 ? { ok: true } : { ok: false, error: r.body?.error ?? "Could not create the sandbox." };
+}

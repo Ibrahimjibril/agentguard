@@ -15,14 +15,34 @@ export interface ApiDeps extends Deps {
 }
 
 const MAX_BODY = 64 * 1024;
-const DEFAULT_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8787", "http://127.0.0.1:8787"];
+export const DEFAULT_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8787", "http://127.0.0.1:8787"];
 
-class HttpError extends Error {
+export class HttpError extends Error {
   status: number;
   constructor(status: number, message: string) { super(message); this.status = status; }
 }
 
-async function readJson(req: http.IncomingMessage): Promise<any> {
+// Host must be localhost (blocks DNS rebinding); a browser Origin must be on the allow list.
+export function assertAllowed(req: http.IncomingMessage, origins: string[]) {
+  const host = String(req.headers.host ?? "");
+  if (!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) throw new HttpError(403, "bad host");
+  const origin = req.headers.origin;
+  if (origin && !origins.includes(origin)) throw new HttpError(403, "origin not allowed");
+}
+
+export function respond(res: http.ServerResponse, origin: string | undefined, origins: string[], status: number, body: unknown) {
+  const headers: Record<string, string> = { "content-type": "application/json", "cache-control": "no-store" };
+  if (origin && origins.includes(origin)) {
+    headers["access-control-allow-origin"] = origin;
+    headers["access-control-allow-headers"] = "content-type";
+    headers["access-control-allow-methods"] = "GET,POST,OPTIONS";
+    headers["vary"] = "Origin";
+  }
+  res.writeHead(status, headers);
+  res.end(JSON.stringify(body));
+}
+
+export async function readJson(req: http.IncomingMessage): Promise<any> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const c of req) {
@@ -55,21 +75,9 @@ export function createHandler(d: ApiDeps) {
   const origins = d.allowedOrigins ?? DEFAULT_ORIGINS;
   return async (req: http.IncomingMessage, res: http.ServerResponse) => {
     const origin = req.headers.origin;
-    const send = (status: number, body: unknown) => {
-      const headers: Record<string, string> = { "content-type": "application/json", "cache-control": "no-store" };
-      if (origin && origins.includes(origin)) {
-        headers["access-control-allow-origin"] = origin;
-        headers["access-control-allow-headers"] = "content-type";
-        headers["access-control-allow-methods"] = "GET,POST,OPTIONS";
-        headers["vary"] = "Origin";
-      }
-      res.writeHead(status, headers);
-      res.end(JSON.stringify(body));
-    };
+    const send = (status: number, body: unknown) => respond(res, origin, origins, status, body);
     try {
-      const host = String(req.headers.host ?? "");
-      if (!/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) throw new HttpError(403, "bad host");
-      if (origin && !origins.includes(origin)) throw new HttpError(403, "origin not allowed");
+      assertAllowed(req, origins);
       const url = new URL(req.url ?? "/", "http://localhost");
       const path = url.pathname;
       if (req.method === "OPTIONS") return send(204, {});

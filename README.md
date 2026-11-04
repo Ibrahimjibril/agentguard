@@ -74,13 +74,13 @@ flowchart LR
 
 ## Who uses this, and how
 
-AgentGuard is **self-hosted**: you run the Guard and the dashboard on your own machine, and your keys never leave it. There is no hosted multi-user service, no sign-up and no wallet connection in the dashboard yet. The hosted site is a read-only replay of a real run.
+AgentGuard is **self-hosted**: you run the Guard and the dashboard on your own machine, and your keys never leave it. There is no hosted multi-user service and no sign-up. The hosted site is a read-only replay of a real run.
 
 To protect your own agent:
 
-1. Deploy a sandbox with the steps in section C below (it creates the vault, the guardian and the agent accounts).
-2. Give your agent two things: the vault address (`vault.<owner>.testnet`) and the agent key file (`.keys/agent.<owner>.testnet.json`). That key can only call `request_payment` on the vault.
-3. Your agent calls `request_payment(to, amount, memo)` instead of sending money itself. `scripts/agent-demo.mjs` is a working example.
+1. Start the Guard and the dashboard (section C below). On first run the dashboard shows **Create your sandbox**: you pick a name and it creates your testnet owner account and the vault, guardian and agent accounts for you.
+2. The dashboard then shows a **Connect your agent** card. Your agent gets the vault address and a key that can only call `request_payment` on the vault. It never gets a wallet key.
+3. Your agent calls `pay({ to, amountNear, memo })` (see `src/agent/client.ts`, which also exports a ready-made tool description for LLM agents) instead of sending money itself, and waits for the decision.
 4. You set the rules and approve big payments in the dashboard.
 
 ## Try it
@@ -108,26 +108,25 @@ Open http://localhost:3000. You should see a "Recorded demo" banner, one request
 git clone https://github.com/Ibrahimjibril/agentguard
 cd agentguard
 npm install
-cp .env.example .env                       # optional: add an LLM key (only needed to draft rules from text)
-
-node scripts/create-account.mjs YOURNAME.testnet   # funded by the testnet faucet; key saved in .keys/
-node scripts/deploy.mjs YOURNAME.testnet           # creates vault, guardian and agent accounts
-```
-
-You should see three `OK` lines (guardian, agent, vault) and a `get_config` line with the on-chain caps (3 NEAR per payment, 6 NEAR per day). The prebuilt contract is `contract/prebuilt/agentguard_vault.wasm`; CI also builds it from `contract/` (see the `contract` workflow).
-
-```sh
-node scripts/guard.ts policy policy.demo.json      # activates: 2 NEAR per payment, 5 NEAR per day, ask above 1.5 NEAR
-npm run serve                                      # Guard + local API on http://localhost:8787
+cp .env.example .env     # optional: add an LLM key (only needed to draft rules from text)
+npm run serve            # the Guard and its local API on http://localhost:8787
 ```
 
 In a second terminal:
 
 ```sh
-cd web && npm install && npm run dev               # dashboard on http://localhost:3000
+cd web && npm install && npm run dev      # dashboard on http://localhost:3000
 ```
 
-In a third terminal run the demo agent. It holds only the function-call key and tries four payments:
+Open http://localhost:3000. With no sandbox yet, the dashboard shows **Create your sandbox**: pick a name, press **Create account**, then **Create the sandbox**. The testnet faucet pays for everything (about two minutes in total). When it finishes you see the vault, the live log and a **Connect your agent** card.
+
+Set the rules. In **Your rules** type, for example, "No more than 2 NEAR per payment and 5 NEAR a day. Ask me above 1.5 NEAR.", press **Draft rules** (needs an LLM key), check the summary, then press **Make these rules live**. Without an LLM key, use the ready-made rules instead:
+
+```sh
+node scripts/guard.ts policy policy.demo.json    # 2 NEAR per payment, 5 NEAR per day, ask above 1.5 NEAR
+```
+
+Run the demo agent in a third terminal. It holds only the function-call key and tries four payments:
 
 ```sh
 node scripts/agent-demo.mjs
@@ -144,6 +143,14 @@ Within about 5 seconds the dashboard shows:
 
 Click **Approve and pay** on the waiting request: it becomes **Paid**. Click any row to see the reasons and the address-check details.
 
+Ask for a payment the way your own agent would, and wait for the decision:
+
+```sh
+node scripts/agent-pay.mjs shop.testnet 0.5 "invoice 42"
+```
+
+Prefer the terminal to the wizard? `node scripts/create-account.mjs YOURNAME.testnet` and `node scripts/deploy.mjs YOURNAME.testnet` do the same two steps. To start from a clean folder (for example to record a demo from zero), run `GUARD_DATA_DIR=$HOME/demo-run npm run serve`: keys, `deployment.json` and the log are kept there.
+
 Prove the sandbox on-chain (reads the stored keys from the chain and attempts forbidden actions):
 
 ```sh
@@ -156,7 +163,7 @@ node scripts/prove-keys.mjs
 ### Tests
 
 ```sh
-npm test      # 65 unit tests: policy engine, rule compiler, scam check, Guard, API, LLM client
+npm test      # 90 unit tests: policy engine, rule compiler, scam check, Guard, API, setup wizard, agent client, LLM client
 ```
 
 The contract's 5 unit tests run in CI (`.github/workflows/contract.yml`).
@@ -167,6 +174,7 @@ The contract's 5 unit tests run in CI (`.github/workflows/contract.yml`).
 - **The scam check is heuristic.** It checks existence on chain, lookalikes of trusted accounts, a small known-bad list (`data/known-bad.json`, sample entries) and phishing-style keywords. It does **not** yet use account age or transaction history.
 - **One guardian.** The Guard holds a single full-access key for `guardian.<owner>` on the machine it runs on. The on-chain caps bound the damage if that key is lost; there is no multisig or TEE yet.
 - **`Paid` is written when `approve` runs.** The vault marks the request paid and counts it against the daily cap in the same call that starts the transfer. If the transfer then fails (for example the destination does not exist), the funds return to the vault but the status stays `Paid`. The Guard blocks non-existent named accounts by default, which avoids the common cause.
+- **The owner key is a local testnet key file.** The setup wizard creates it in `.keys/` (never committed). There is no wallet connection yet; do not reuse this approach for real funds.
 - **The dashboard has no login.** The Guard API binds to `127.0.0.1`, checks the `Host` header and only accepts browser requests from `localhost` origins, so other websites cannot call it. Do not expose it to a network.
 - **The hosted demo cannot change anything.** It replays `web/public/demo-snapshot.json`, exported from a real run with `scripts/export-snapshot.ts`.
 - **LLM.** Rule drafting works with any OpenAI-compatible endpoint or Anthropic (see `.env.example`). The default is Google Gemini's free tier. Only the rule text you type is sent. A policy with no limits needs an explicit confirmation before it can go live.
@@ -177,11 +185,14 @@ The contract's 5 unit tests run in CI (`.github/workflows/contract.yml`).
 contract/            Rust vault contract (near-sdk 5), unit tests, prebuilt wasm
 src/policy/          policy schema + deterministic checker, LLM rule compiler
 src/guard/           Guard core, scam heuristics, SQLite store, chain adapter
-src/server/          local API for the dashboard
+src/server/          local API for the dashboard (including the sandbox setup routes)
+src/setup/           the "create your sandbox" flow (owner account, vault, guardian, agent)
+src/agent/           pay() client and tool description for your own AI agent
 src/llm/             small LLM client with retry and model fallback
 scripts/             deploy, demo agent, Guard CLI and server, proof scripts, snapshot export
 web/                 Next.js dashboard
 brand/               logo files
+docs/                the author's testnet deployment (public data only)
 ```
 
 ## Libraries, templates and AI assistance

@@ -158,3 +158,27 @@ summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 .foot { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13.5px; max-width: 70ch; }
 .toast { position: fixed; left: 50%; bottom: 20px; z-index: 10; max-width: calc(100vw - 32px); padding: 11px 18px; border-radius: 12px; transform: translateX(-50%); background: var(--ink); color: var(--paper); font-weight: 600; box-shadow: 0 8px 28px rgba(42, 33, 24, 0.3); }
 @media (prefers-reduced-motion: reduce) { *, html { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+.onboard { padding: 24px 22px; max-width: 760px; }
+.onboard h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
+.steps { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 14px; }
+.step { display: grid; grid-template-columns: 38px 1fr; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+.step.active { border-color: var(--ink); background: var(--card); }
+.step.done { background: var(--card-2); }
+.step.locked { opacity: 0.55; }
+.step-num { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--ink); color: var(--paper); font-weight: 700; }
+.step.done .step-num { background: var(--allow); }
+.step-body h3 { font-size: 19px; font-weight: 600; margin-bottom: 6px; }
+.step-body p + p { margin-top: 8px; }
+.field { display: flex; align-items: center; gap: 8px; }
+.field input { flex: 1; min-width: 0; min-height: 46px; padding: 10px 12px; font: inherit; color: inherit; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; }
+.field input:focus-visible { outline: 3px solid var(--blue); outline-offset: 1px; }
+.field span { color: var(--muted); font-weight: 600; }
+
+.connect { margin-top: 28px; padding: 22px 20px; }
+.connect h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+.connect h3 { margin-top: 18px; font-size: 17px; font-weight: 600; }
+.facts { display: grid; gap: 8px; margin: 14px 0 0; }
+.facts div { display: grid; gap: 2px; padding: 9px 12px; border-radius: 10px; background: var(--card-2); border: 1px solid var(--line); }
+.facts dt { font-size: 12.5px; color: var(--muted); }
+.facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }

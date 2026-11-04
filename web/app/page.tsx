@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { API_BASE, decide, getState, isDemo } from "../lib/api";
-import type { State } from "../lib/api";
+import { API_BASE, decide, getSetup, getState, isDemo } from "../lib/api";
+import type { SetupStatus, State } from "../lib/api";
 import { nearFmt, yoctoToNear } from "../lib/format";
 import { Logo } from "../components/Logo";
 import { GateArt } from "../components/GateArt";
@@ -9,11 +9,14 @@ import { Meter } from "../components/Meter";
 import { NeedsYou } from "../components/NeedsYou";
 import { Log } from "../components/Log";
 import { Rules } from "../components/Rules";
+import { Onboarding } from "../components/Onboarding";
+import { ConnectAgent } from "../components/ConnectAgent";
 
 const REPO = "https://github.com/Ibrahimjibril/agentguard";
 
 export default function Page() {
   const [state, setState] = useState<State | null>(null);
+  const [setup, setSetup] = useState<SetupStatus | null>(null);
   const [offline, setOffline] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -21,7 +24,9 @@ export default function Page() {
 
   const refresh = useCallback(async () => {
     try {
-      setState(await getState());
+      const s = await getSetup();
+      setSetup(s);
+      if (s.stage === "deployed") setState(await getState());
       setOffline(false);
     } catch {
       setOffline(true);
@@ -53,11 +58,14 @@ export default function Page() {
   const rulePerTx = yoctoToNear(state?.policy?.json?.per_tx_limit);
   const decisions = state?.decisions ?? [];
   const waiting = decisions.filter((d) => d.status === "awaiting_approval");
+  const needsSetup = setup !== null && setup.stage !== "deployed";
   const statusText = offline
     ? "Guard offline"
-    : state
-      ? (isDemo ? "Recorded run · NEAR testnet" : "Guard online · NEAR testnet")
-      : "Connecting…";
+    : needsSetup
+      ? "Not set up yet"
+      : state
+        ? (isDemo ? "Recorded run · NEAR testnet" : "Guard online · NEAR testnet")
+        : "Connecting…";
 
   return (
     <div className="shell">
@@ -77,10 +85,10 @@ export default function Page() {
             Give an AI agent money without giving it your keys. Every payment passes your rules, a scam check and the vault’s own on-chain limits before anything moves.
           </p>
           <div className="hero-cta">
-            <a className="btn btn-accent" href={isDemo ? (state?.snapshot?.repo ?? REPO) : "#rules"} target={isDemo ? "_blank" : undefined} rel={isDemo ? "noreferrer" : undefined}>
-              {isDemo ? "Run it yourself" : "Write your rules"}
+            <a className="btn btn-accent" href={isDemo ? (state?.snapshot?.repo ?? REPO) : needsSetup ? "#setup" : "#rules"} target={isDemo ? "_blank" : undefined} rel={isDemo ? "noreferrer" : undefined}>
+              {isDemo ? "Run it yourself" : needsSetup ? "Create your sandbox" : "Write your rules"}
             </a>
-            <a className="link-quiet" href="#log">See the decisions</a>
+            {!needsSetup && <a className="link-quiet" href="#log">See the decisions</a>}
           </div>
         </div>
         <GateArt />
@@ -100,6 +108,9 @@ export default function Page() {
         </div>
       )}
 
+      {needsSetup && setup ? (
+        <Onboarding setup={setup} onChanged={refresh} notify={notify} />
+      ) : (
       <div className="layout">
         <main className="col-main">
           <section className="card vault">
@@ -144,6 +155,9 @@ export default function Page() {
           <Rules state={state} onChanged={refresh} notify={notify} />
         </div>
       </div>
+      )}
+
+      {!isDemo && setup && setup.stage === "deployed" && <ConnectAgent setup={setup} notify={notify} />}
 
       <footer className="foot">
         The AI only drafts your rules. Plain code makes every decision, and the vault enforces its own limits on-chain.
