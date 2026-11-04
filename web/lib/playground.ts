@@ -93,8 +93,9 @@ export async function runCheck(body: any): Promise<{ status: number; json: any }
     risk_block_score: 70,
     risk_review_score: 40,
   });
-  if (!parsed.ok) return { status: 400, json: { ok: false, error: parsed.errors.join("; ") } };
-  const policy = parsed.policy;
+  const pr = parsed as any;
+  if (!pr.ok) return { status: 400, json: { ok: false, error: (pr.errors as string[]).join("; ") } };
+  const policy = pr.policy as import("./core/policy").Policy;
 
   const spentToday = nearToYocto(String(body?.spentTodayNear ?? "0")) ?? 0n;
   const trusted = Array.from(new Set([DEMO_OWNER, ...policy.allowlist]));
