@@ -3,11 +3,13 @@
 //  - it CAN ask the vault for a payment, and the vault's on-chain hard cap still applies
 //  - only the guardian can approve, and then the vault pays
 // Usage: node scripts/prove-sandbox.mjs
+import path from "node:path";
 import * as near from "@fastnear/api";
 import fs from "node:fs";
 
-const dep = JSON.parse(fs.readFileSync("deployment.json", "utf8"));
-const key = (id) => JSON.parse(fs.readFileSync(`.keys/${id}.json`, "utf8"));
+const DIR = process.env.GUARD_DATA_DIR ?? ".";
+const dep = JSON.parse(fs.readFileSync(path.join(DIR, "deployment.json"), "utf8"));
+const key = (id) => JSON.parse(fs.readFileSync(path.join(DIR, ".keys", `${id}.json`), "utf8"));
 near.config({ networkId: "testnet" });
 const A = near.actions;
 const Y = (n) => (BigInt(Math.round(n * 1000)) * 10n ** 21n).toString();

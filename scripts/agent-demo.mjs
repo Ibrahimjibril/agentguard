@@ -1,11 +1,13 @@
 // A simple AI agent that tries three payments through the vault.
 // It only holds a function-call key limited to vault.request_payment.
 // Usage: node scripts/agent-demo.mjs
+import path from "node:path";
 import * as near from "@fastnear/api";
 import fs from "node:fs";
 
-const dep = JSON.parse(fs.readFileSync("deployment.json", "utf8"));
-const key = JSON.parse(fs.readFileSync(`.keys/${dep.agent}.json`, "utf8"));
+const DIR = process.env.GUARD_DATA_DIR ?? ".";
+const dep = JSON.parse(fs.readFileSync(path.join(DIR, "deployment.json"), "utf8"));
+const key = JSON.parse(fs.readFileSync(path.join(DIR, ".keys", `${dep.agent}.json`), "utf8"));
 near.config({ networkId: "testnet" });
 const signer = near.utils.signerFromPrivateKey(key.privateKey);
 const Y = (n) => (BigInt(Math.round(n * 1000)) * 10n ** 21n).toString();

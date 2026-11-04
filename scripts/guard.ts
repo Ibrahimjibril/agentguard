@@ -4,6 +4,7 @@
 //   node scripts/guard.ts watch                  keep processing (every 5s)
 //   node scripts/guard.ts log                    show the decision log
 //   node scripts/guard.ts approve <id> | reject <id>   resolve a request awaiting a human
+import path from "node:path";
 import fs from "node:fs";
 import { openStore } from "../src/guard/store.ts";
 import { processAll, humanDecide } from "../src/guard/guard.ts";
@@ -12,9 +13,10 @@ import { parsePolicy } from "../src/policy/policy.ts";
 import { fmtNear } from "../src/policy/policy.ts";
 
 const [cmd, arg] = process.argv.slice(2);
-const store = openStore(process.env.GUARD_DB ?? "guard.db");
-const dep = readJson("deployment.json");
-const key = readJson(`.keys/${dep.guardian}.json`).privateKey;
+const DIR = process.env.GUARD_DATA_DIR ?? ".";
+const store = openStore(process.env.GUARD_DB ?? path.join(DIR, "guard.db"));
+const dep = readJson(path.join(DIR, "deployment.json"));
+const key = readJson(path.join(DIR, ".keys", `${dep.guardian}.json`)).privateKey;
 const deps = {
   store, chain: nearChain(dep, key), trusted: [dep.owner],
   knownBad: fs.existsSync("data/known-bad.json") ? readJson("data/known-bad.json") : [],

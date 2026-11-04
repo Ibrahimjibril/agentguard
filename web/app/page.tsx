@@ -64,7 +64,7 @@ export default function Page() {
     : needsSetup
       ? "Not set up yet"
       : state
-        ? (isDemo ? "Recorded run · NEAR testnet" : "Guard online · NEAR testnet")
+        ? (isDemo ? "Recorded run" : "Guard online")
         : "Connecting…";
 
   return (
@@ -85,7 +85,7 @@ export default function Page() {
             Give an AI agent money without giving it your keys. Every payment passes your rules, a scam check and the vault’s own on-chain limits before anything moves.
           </p>
           <div className="hero-cta">
-            <a className="btn btn-accent" href={isDemo ? (state?.snapshot?.repo ?? REPO) : needsSetup ? "#setup" : "#rules"} target={isDemo ? "_blank" : undefined} rel={isDemo ? "noreferrer" : undefined}>
+            <a className="btn btn-accent" href={isDemo ? `${state?.snapshot?.repo ?? REPO}#try-it` : needsSetup ? "#setup" : "#rules"} target={isDemo ? "_blank" : undefined} rel={isDemo ? "noreferrer" : undefined}>
               {isDemo ? "Run it yourself" : needsSetup ? "Create your sandbox" : "Write your rules"}
             </a>
             {!needsSetup && <a className="link-quiet" href="#log">See the decisions</a>}
@@ -98,7 +98,7 @@ export default function Page() {
         <div className="banner banner-info" role="note">
           <b>Recorded demo.</b> These are real decisions from a live NEAR testnet run on{" "}
           {new Date(state.snapshot.capturedAt).toLocaleDateString()}. To approve payments and write rules,{" "}
-          <a className="link" href={state.snapshot.repo} target="_blank" rel="noreferrer">run AgentGuard yourself</a>.
+          <a className="link" href={`${state.snapshot.repo}#try-it`} target="_blank" rel="noreferrer">run AgentGuard yourself</a>.
         </div>
       )}
 

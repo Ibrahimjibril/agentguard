@@ -1,10 +1,12 @@
 // Reads the key permissions straight from the chain, then makes two attempts that
 // only the NEAR protocol (not our code) can refuse. Usage: node scripts/prove-keys.mjs
+import path from "node:path";
 import * as near from "@fastnear/api";
 import fs from "node:fs";
 
-const dep = JSON.parse(fs.readFileSync("deployment.json", "utf8"));
-const key = (id) => JSON.parse(fs.readFileSync(`.keys/${id}.json`, "utf8"));
+const DIR = process.env.GUARD_DATA_DIR ?? ".";
+const dep = JSON.parse(fs.readFileSync(path.join(DIR, "deployment.json"), "utf8"));
+const key = (id) => JSON.parse(fs.readFileSync(path.join(DIR, ".keys", `${id}.json`), "utf8"));
 near.config({ networkId: "testnet" });
 const A = near.actions;
 const NEARS = (y) => Number(BigInt(y) / 10n ** 20n) / 1e4;

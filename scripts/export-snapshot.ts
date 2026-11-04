@@ -1,14 +1,16 @@
 // Saves the current dashboard state as a public, read-only demo snapshot.
 // It contains only public chain data and the decision log (no keys, no .env).
 //   node --env-file=.env scripts/export-snapshot.ts
+import path from "node:path";
 import fs from "node:fs";
 import { openStore } from "../src/guard/store.ts";
 import { buildState } from "../src/server/api.ts";
 import { vaultInfoReader } from "../src/server/vault.ts";
 import { readJson } from "../src/guard/chain.ts";
 
-const dep = readJson("deployment.json");
-const store = openStore(process.env.GUARD_DB ?? "guard.db");
+const DIR = process.env.GUARD_DATA_DIR ?? ".";
+const dep = readJson(path.join(DIR, "deployment.json"));
+const store = openStore(process.env.GUARD_DB ?? path.join(DIR, "guard.db"));
 const state: any = await buildState({
   store,
   chain: null as any,
