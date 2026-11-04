@@ -11,6 +11,7 @@ import { Log } from "../components/Log";
 import { Rules } from "../components/Rules";
 import { Onboarding } from "../components/Onboarding";
 import { ConnectAgent } from "../components/ConnectAgent";
+import { Playground } from "../components/Playground";
 
 const REPO = "https://github.com/Ibrahimjibril/agentguard";
 
@@ -89,6 +90,7 @@ export default function Page() {
               {isDemo ? "Run it yourself" : needsSetup ? "Create your sandbox" : "Write your rules"}
             </a>
             {!needsSetup && <a className="link-quiet" href="#log">See the decisions</a>}
+{isDemo && <a className="link-quiet" href="#playground">Try it live</a>}
           </div>
         </div>
         <GateArt />
@@ -159,6 +161,7 @@ export default function Page() {
 
       {!isDemo && setup && setup.stage === "deployed" && <ConnectAgent setup={setup} notify={notify} />}
 
+{isDemo && <Playground />}
       <footer className="foot">
         The AI only drafts your rules. Plain code makes every decision, and the vault enforces its own limits on-chain.
       </footer>
