@@ -65,7 +65,7 @@ export default function Page() {
     : needsSetup
       ? "Not set up yet"
       : state
-        ? (isDemo ? "Recorded run" : "Guard online")
+        ? (isDemo ? "Live demo" : "Guard online")
         : "Connecting…";
 
   return (
@@ -86,11 +86,11 @@ export default function Page() {
             Give an AI agent money without giving it your keys. Every payment passes your rules, a scam check and the vault’s own on-chain limits before anything moves.
           </p>
           <div className="hero-cta">
-            <a className="btn btn-accent" href={isDemo ? `${state?.snapshot?.repo ?? REPO}#try-it` : needsSetup ? "#setup" : "#rules"} target={isDemo ? "_blank" : undefined} rel={isDemo ? "noreferrer" : undefined}>
-              {isDemo ? "Run it yourself" : needsSetup ? "Create your sandbox" : "Write your rules"}
+            <a className="btn btn-accent" href={isDemo ? "#playground" : needsSetup ? "#setup" : "#rules"}>
+              {isDemo ? "Try it live" : needsSetup ? "Create your sandbox" : "Write your rules"}
             </a>
             {!needsSetup && <a className="link-quiet" href="#log">See the decisions</a>}
-{isDemo && <a className="link-quiet" href="#playground">Try it live</a>}
+{isDemo && <a className="link-quiet" href={REPO} target="_blank" rel="noreferrer">Run it locally</a>}
           </div>
         </div>
         <GateArt />
