@@ -25,6 +25,21 @@ No install, no wallet, no keys. Everything below works on the live demo.
 
 ---
 
+## What is inside (and what is real)
+
+The live demo page shows only the dashboard and a checker. The full system is more than that:
+
+| Part | Where | Status |
+|---|---|---|
+| Vault smart contract (Rust, near-sdk 5), deployed keyless on NEAR testnet | contract/ | Real, on-chain: vault.jibsonfta.testnet |
+| Guard service: policy engine, scam check, guardian signer | src/policy, src/guard, src/server | Real, self-hosted |
+| Agent client (holds only a function-call key) | src/agent | Real |
+| Setup wizard (creates owner, vault, guardian and agent accounts) | src/setup | Real, self-hosted |
+| LLM rule drafting (validated before use) | src/policy/compile.ts | Real, needs an LLM key |
+| Dashboard | web/ | Real; the hosted copy shows a recorded run plus a live checker |
+
+---
+
 ## The problem
 
 To let an AI agent pay for things, teams usually hand it a wallet key. If the agent is tricked (prompt injection, a lookalike address, a bug), it can spend everything. Rate limits inside the agent's own code do not help, because the agent controls that code.
