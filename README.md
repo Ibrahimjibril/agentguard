@@ -8,7 +8,7 @@ Track: **AI Security & Defense** (`security`) · NEAR HACKATHON · Network: NEAR
 
 | | |
 |---|---|
-| Hosted dashboard | https://agentguard-bice-delta.vercel.app |
+| Live demo (try it, no install) | https://agentguard-bice-delta.vercel.app |
 | Vault contract (testnet) | [`vault.jibsonfta.testnet`](https://testnet.nearblocks.io/address/vault.jibsonfta.testnet) |
 | Demo video | `ADD LINK HERE` |
 
@@ -16,11 +16,12 @@ Track: **AI Security & Defense** (`security`) · NEAR HACKATHON · Network: NEAR
 
 ## For judges: verify it in 2 minutes
 
-No install needed for the first two steps.
+No install, no wallet, no keys. Everything below works on the live demo.
 
-1. **Open the dashboard** (link above). It shows a recorded run of the real testnet Guard: paid payments, blocked attacks, and one request waiting for human approval. Click any row to see the reasons and the address-check details.
-2. **Check the security claim on-chain.** Open [`vault.jibsonfta.testnet` on NearBlocks](https://testnet.nearblocks.io/address/vault.jibsonfta.testnet) and look at its access keys: the vault has **none**, so nobody can sign as the vault or upgrade it. The agent account has exactly **one** function-call key, limited to `request_payment` on the vault, and a function-call key cannot transfer NEAR.
-3. **Run it yourself (optional, about 5 minutes)**: see [Run it yourself](#run-it-yourself).
+1. **Open the live demo** (link above) and tap **Try it live**. You play the AI agent: ask for a payment and watch the Guard decide, with reasons and a 0-100 risk score. Tap the presets to see the attacks get stopped: **Over the limit**, **Lookalike address** (`jibsonfat.testnet` vs the owner `jibsonfta.testnet`), **Phishing name**, and **Needs approval**. Change the three rule boxes and ask again to see the policy drive the decision.
+2. **Tap "Verify on-chain".** It reads the real access keys of `vault.jibsonfta.testnet` and `agent.jibsonfta.testnet` from NEAR testnet right now. The vault has **none**. The agent has exactly **one** function-call key, limited to `request_payment`, and a function-call key cannot transfer NEAR. You can cross-check on [NearBlocks](https://testnet.nearblocks.io/address/vault.jibsonfta.testnet).
+3. **Scroll the recorded log** on the same page: real decisions from a live testnet run (paid, blocked, and one request waiting for human approval). Click any row for the reasons.
+4. **Run the full system yourself (optional, about 5 minutes):** see [Run it yourself](#run-it-yourself).
 
 ---
 
@@ -75,6 +76,17 @@ flowchart LR
 | Function-call access key | The agent's only key: `request_payment` on the vault, nothing else |
 | Own smart contract (Rust, `near-sdk` 5) | Holds funds, enforces hard per-payment and daily caps, pays only after the guardian approves |
 | Keyless account | The vault has **no access keys**: nobody can sign as the vault or upgrade it. It deploys and initialises in one atomic transaction |
+
+## The hosted playground
+
+The "Try the gate" card on the live demo is a real, read-only run of the Guard's decision logic:
+
+- `POST /api/check` runs the **same** `policy.ts` (rule checker) and `scam.ts` (scam heuristics) as the real Guard. Copies live in `web/lib/core/`.
+- The scam check asks NEAR testnet RPC whether the destination account exists, so "does not exist on chain" is a live fact, not a canned answer.
+- **Nothing is signed and no money moves.** The server holds no keys. It is rate limited (20 checks per minute per IP).
+- Rules are set per request in the page. "Spent today" is a counter inside your browser session for the test.
+- The trusted account for the lookalike check is the demo owner `jibsonfta.testnet`.
+- `GET /api/verify-keys` reads the vault and agent access keys from the chain.
 
 ## Who uses this, and how
 
@@ -173,7 +185,8 @@ The contract's 5 unit tests run in CI (`.github/workflows/contract.yml`).
 ## What is real and what is limited
 
 - **Testnet only.** Nothing has been deployed to mainnet or audited.
-- **The hosted demo is a replay.** It shows `web/public/demo-snapshot.json`, exported from a real testnet run with `scripts/export-snapshot.ts`. It is read-only and says so on the page.
+- **The hosted checkpoint log is a replay.** It shows `web/public/demo-snapshot.json`, exported from a real testnet run with `scripts/export-snapshot.ts`.
+- **The hosted playground is a simulation.** It uses the real checker and live testnet reads, but it does not call the vault, sign anything or pay anyone. Approving and paying needs the self-hosted Guard (see Run it yourself).
 - **The scam check is heuristic.** It checks existence on chain, lookalikes of trusted accounts, a small known-bad list (`data/known-bad.json`, sample entries) and phishing-style keywords. It does not yet use account age or transaction history.
 - **One guardian.** The Guard holds a single full-access key for `guardian.<owner>` on the machine it runs on. The on-chain caps bound the damage if that key is lost. There is no multisig or TEE yet.
 - **`Paid` is written when `approve` runs.** The vault marks the request paid and counts it against the daily cap in the same call that starts the transfer. If the transfer then fails (for example the destination does not exist), the funds return to the vault but the status stays `Paid`. The Guard blocks non-existent named accounts by default, which avoids the common cause.
@@ -199,7 +212,7 @@ src/setup/           the "create your sandbox" flow (owner account, vault, guard
 src/agent/           pay() client and tool description for your own AI agent
 src/llm/             small LLM client with retry and model fallback
 scripts/             deploy, demo agent, Guard CLI and server, proof scripts, snapshot export
-web/                 Next.js dashboard
+web/                 Next.js dashboard, plus the hosted playground (app/api, lib/core)
 brand/               logo files
 docs/                the author's testnet deployment (public data only)
 ```
