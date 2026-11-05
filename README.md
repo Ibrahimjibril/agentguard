@@ -18,9 +18,9 @@ Track: **AI Security & Defense** (`security`) · NEAR HACKATHON · Network: NEAR
 
 No install, no wallet, no keys. Everything below works on the live demo.
 
-1. **Open the live demo** (link above) and tap **Try it live**. You play the AI agent: ask for a payment and watch the Guard decide, with reasons and a 0-100 risk score. Tap the presets to see the attacks get stopped: **Over the limit**, **Lookalike address** (`jibsonfat.testnet` vs the owner `jibsonfta.testnet`), **Phishing name**, and **Needs approval**. Change the three rule boxes and ask again to see the policy drive the decision.
+1. **Open the live demo** (link above) and tap **Try it live**. You play the AI agent: ask for a payment and watch the Guard decide, with reasons and a 0-100 risk score. Tap the presets to see attacks stopped or held for a human: **Over the limit**, **Lookalike address** (`jibsonfat.testnet` vs the owner `jibsonfta.testnet`), **Phishing name**, and **Needs approval**. Change the three rule boxes and ask again to see the policy drive the decision.
 2. **Tap "Verify on-chain".** It reads the real access keys of `vault.jibsonfta.testnet` and `agent.jibsonfta.testnet` from NEAR testnet right now. The vault has **none**. The agent has exactly **one** function-call key, limited to `request_payment`, and a function-call key cannot transfer NEAR. You can cross-check on [NearBlocks](https://testnet.nearblocks.io/address/vault.jibsonfta.testnet).
-3. **Scroll the recorded log** on the same page: real decisions from a live testnet run (paid, blocked, and one request waiting for human approval). Click any row for the reasons.
+3. **Scroll the recorded log** on the same page: real decisions from a live testnet run (paid, blocked, and one request waiting for human approval). Click any row for the reasons. Tap **Approve and pay** on the waiting request to see the flow (simulated in your browser, nothing is sent).
 4. **Run the full system yourself (optional, about 5 minutes):** see [Run it yourself](#run-it-yourself).
 
 ---
@@ -83,7 +83,7 @@ The "Try the gate" card on the live demo is a real, read-only run of the Guard's
 
 - `POST /api/check` runs the **same** `policy.ts` (rule checker) and `scam.ts` (scam heuristics) as the real Guard. Copies live in `web/lib/core/`.
 - The scam check asks NEAR testnet RPC whether the destination account exists, so "does not exist on chain" is a live fact, not a canned answer.
-- **Nothing is signed and no money moves.** The server holds no keys. It is rate limited (20 checks per minute per IP).
+- **Nothing is signed and no money moves.** The server holds no keys. It has a basic best-effort rate limit (about 20 checks per minute per IP).
 - Rules are set per request in the page. "Spent today" is a counter inside your browser session for the test.
 - The trusted account for the lookalike check is the demo owner `jibsonfta.testnet`.
 - `GET /api/verify-keys` reads the vault and agent access keys from the chain.
