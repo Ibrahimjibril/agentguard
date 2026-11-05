@@ -24,7 +24,7 @@ function applyDemo(st: State, ov: Ov): State {
   const decisions = st.decisions.map((d) => {
     const o = ov[d.id];
     if (!o || d.status !== "awaiting_approval") return d;
-    if (o === "paid") spent += Number(d.amountNear);
+    if (o === "paid") spent += parseFloat(String(d.amountNear)) || 0;
     return { ...d, status: o, updated: Date.now() };
   });
   const awaiting = decisions.filter((d) => d.status === "awaiting_approval").length;
