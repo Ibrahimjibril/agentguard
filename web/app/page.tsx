@@ -15,6 +15,26 @@ import { Playground } from "../components/Playground";
 
 const REPO = "https://github.com/Ibrahimjibril/agentguard";
 
+type Ov = Record<number, "paid" | "human_rejected">;
+
+// Hosted demo only: approve/decline are simulated in this browser session.
+function applyDemo(st: State, ov: Ov): State {
+  if (!isDemo || Object.keys(ov).length === 0) return st;
+  let spent = 0;
+  const decisions = st.decisions.map((d) => {
+    const o = ov[d.id];
+    if (!o || d.status !== "awaiting_approval") return d;
+    if (o === "paid") spent += Number(d.amountNear);
+    return { ...d, status: o, updated: Date.now() };
+  });
+  const awaiting = decisions.filter((d) => d.status === "awaiting_approval").length;
+  const r6 = (n: number) => Math.round(n * 1e6) / 1e6;
+  const vault = st.vault
+    ? { ...st.vault, spentTodayNear: r6(st.vault.spentTodayNear + spent), balanceNear: r6(st.vault.balanceNear - spent) }
+    : st.vault;
+  return { ...st, decisions, awaiting, vault };
+}
+
 export default function Page() {
   const [state, setState] = useState<State | null>(null);
   const [setup, setSetup] = useState<SetupStatus | null>(null);
@@ -22,12 +42,13 @@ export default function Page() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const demoOv = useRef<Ov>({});
 
   const refresh = useCallback(async () => {
     try {
       const s = await getSetup();
       setSetup(s);
-      if (s.stage === "deployed") setState(await getState());
+      if (s.stage === "deployed") setState(applyDemo(await getState(), demoOv.current));
       setOffline(false);
     } catch {
       setOffline(true);
@@ -47,6 +68,12 @@ export default function Page() {
   }, []);
 
   async function onDecide(id: number, approve: boolean) {
+    if (isDemo) {
+      demoOv.current[id] = approve ? "paid" : "human_rejected";
+      notify(approve ? "Simulated: approved. In the self-hosted version the vault pays on-chain." : "Simulated: declined. Nothing was sent.");
+      refresh();
+      return;
+    }
     setBusyId(id);
     const r = await decide(id, approve).catch(() => ({ ok: false, error: "Could not reach the Guard." }));
     setBusyId(null);

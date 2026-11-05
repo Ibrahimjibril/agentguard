@@ -186,7 +186,7 @@ The contract's 5 unit tests run in CI (`.github/workflows/contract.yml`).
 
 - **Testnet only.** Nothing has been deployed to mainnet or audited.
 - **The hosted checkpoint log is a replay.** It shows `web/public/demo-snapshot.json`, exported from a real testnet run with `scripts/export-snapshot.ts`.
-- **The hosted playground is a simulation.** It uses the real checker and live testnet reads, but it does not call the vault, sign anything or pay anyone. Approving and paying needs the self-hosted Guard (see Run it yourself).
+- **The hosted playground is a simulation.** It uses the real checker and live testnet reads, but it does not call the vault, sign anything or pay anyone. Approve and Decline on the hosted page are simulated in your browser only; real approval and payment need the self-hosted Guard (see Run it yourself).
 - **The scam check is heuristic.** It checks existence on chain, lookalikes of trusted accounts, a small known-bad list (`data/known-bad.json`, sample entries) and phishing-style keywords. It does not yet use account age or transaction history.
 - **One guardian.** The Guard holds a single full-access key for `guardian.<owner>` on the machine it runs on. The on-chain caps bound the damage if that key is lost. There is no multisig or TEE yet.
 - **`Paid` is written when `approve` runs.** The vault marks the request paid and counts it against the daily cap in the same call that starts the transfer. If the transfer then fails (for example the destination does not exist), the funds return to the vault but the status stays `Paid`. The Guard blocks non-existent named accounts by default, which avoids the common cause.
