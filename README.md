@@ -101,6 +101,8 @@ AgentGuard is **self-hosted**: you run the Guard and the dashboard on your own m
 
 ## Run it yourself
 
+> **Judges: you do not need to run anything.** The [live demo](https://agentguard-bice-delta.vercel.app) works in your browser. The `localhost` addresses below only work on your own computer, after you start the server yourself.
+
 Requires **Node.js 22.13+** (the Guard uses the built-in `node:sqlite`).
 
 ### Option A: replay the recorded run locally (no keys, no network)
@@ -112,7 +114,7 @@ npm install
 NEXT_PUBLIC_DEMO_SNAPSHOT=/demo-snapshot.json npm run dev
 ```
 
-Open http://localhost:3000. You should see a "Recorded demo" banner, one request "Waiting for you" (1.7 NEAR), and a log of paid and blocked payments with reasons.
+Open `http://localhost:3000` on your own computer. You should see the "Recorded log, live checker" banner, one request "Waiting for you" (1.7 NEAR), and a log of paid and blocked payments with reasons.
 
 ### Option B: live run on testnet (about 5 minutes)
 
@@ -130,7 +132,7 @@ In a second terminal:
 cd web && npm install && npm run dev      # dashboard on http://localhost:3000
 ```
 
-Open http://localhost:3000, pick a name, press **Create account**, then **Create the sandbox**. The testnet faucet pays for everything (about two minutes).
+Open `http://localhost:3000` on your own computer, pick a name, press **Create account**, then **Create the sandbox**. The testnet faucet pays for everything (about two minutes).
 
 **Set the rules.** Type, for example, "No more than 2 NEAR per payment and 5 NEAR a day. Ask me above 1.5 NEAR.", press **Draft rules** (needs an LLM key), check the summary, then **Make these rules live**. Without an LLM key, use the ready-made rules:
 
