@@ -116,7 +116,7 @@ AgentGuard is **self-hosted**: you run the Guard and the dashboard on your own m
 
 ## Run it yourself
 
-> **Judges: you do not need to run anything.** The [live demo](https://agentguard-bice-delta.vercel.app) works in your browser. The `localhost` addresses below only work on your own computer, after you start the server yourself.
+> **Judges: you do not need to run anything.** The [live demo](https://agentguard-bice-delta.vercel.app) works in your browser. The commands below run on your own computer, after you start the server yourself.
 
 Requires **Node.js 22.13+** (the Guard uses the built-in `node:sqlite`).
 
@@ -129,7 +129,7 @@ npm install
 NEXT_PUBLIC_DEMO_SNAPSHOT=/demo-snapshot.json npm run dev
 ```
 
-Open `http://localhost:3000` on your own computer. You should see the "Recorded log, live checker" banner, one request "Waiting for you" (1.7 NEAR), and a log of paid and blocked payments with reasons.
+On your own computer, open the dashboard (default port 3000). You should see the "Recorded log, live checker" banner, one request "Waiting for you" (1.7 NEAR), and a log of paid and blocked payments with reasons.
 
 ### Option B: live run on testnet (about 5 minutes)
 
@@ -138,16 +138,16 @@ git clone https://github.com/Ibrahimjibril/agentguard
 cd agentguard
 npm install
 cp .env.example .env     # optional: add an LLM key (only needed to draft rules from text)
-npm run serve            # the Guard and its local API on http://localhost:8787
+npm run serve            # the Guard and its local API on port 8787
 ```
 
 In a second terminal:
 
 ```bash
-cd web && npm install && npm run dev      # dashboard on http://localhost:3000
+cd web && npm install && npm run dev      # dashboard on port 3000
 ```
 
-Open `http://localhost:3000` on your own computer, pick a name, press **Create account**, then **Create the sandbox**. The testnet faucet pays for everything (about two minutes).
+On your own computer, open the dashboard (default port 3000), pick a name, press **Create account**, then **Create the sandbox**. The testnet faucet pays for everything (about two minutes).
 
 **Set the rules.** Type, for example, "No more than 2 NEAR per payment and 5 NEAR a day. Ask me above 1.5 NEAR.", press **Draft rules** (needs an LLM key), check the summary, then **Make these rules live**. Without an LLM key, use the ready-made rules:
 
