@@ -10,7 +10,7 @@ Track: **AI Security & Defense** (`security`) · NEAR HACKATHON · Network: NEAR
 |---|---|
 | Live demo (try it, no install) | https://agentguard-bice-delta.vercel.app |
 | Vault contract (testnet) | [`vault.jibsonfta.testnet`](https://testnet.nearblocks.io/address/vault.jibsonfta.testnet) |
-| Demo video | `ADD LINK HERE` |
+| Demo video (X post) | https://x.com/Jibsonfta/status/2118582872256721080 |
 
 ---
 
