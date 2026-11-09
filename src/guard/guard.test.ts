@@ -24,7 +24,7 @@ function setup(pending: PendingReq[], opts: { exists?: Record<string, boolean | 
   const deps: Deps = { store, chain, trusted: ["owner.testnet"], knownBad: ["scammer.testnet"], now: () => opts.now ?? Date.UTC(2026, 10, 5, 12) };
   return { store, deps, calls };
 }
-const req = (id: number, to: string, amount: number): PendingReq => ({ id, to, amount: N(amount), memo: "t" });
+const req = (id: number, to: string, amount: number, memo = "t" + id): PendingReq => ({ id, to, amount: N(amount), memo });
 
 test("demo (a): a legitimate payment is allowed and paid", async () => {
   const { store, deps, calls } = setup([req(0, "shop.testnet", 1)]);
@@ -109,4 +109,34 @@ test("a failed vault call is recorded as an error, not as paid", async () => {
 test("an invalid policy cannot be stored", () => {
   const { store } = setup([]);
   assert.throws(() => store.setPolicy({ ...policy, risk_block_score: 999 }), /invalid policy/);
+});
+
+test("duplicate detection: a retried identical request goes to a human, not to the vault", async () => {
+  const { store, deps, calls } = setup([req(0, "shop.testnet", 1, "inv-1"), req(1, "shop.testnet", 1, "inv-1")]);
+  store.setPolicy(policy);
+  const out = await processAll(deps);
+  assert.equal(out[0].status, "paid");
+  assert.equal(out[1].verdict, "ask");
+  assert.equal(out[1].status, "awaiting_approval");
+  assert.ok(out[1].reasons[0].startsWith("DUPLICATE_RECENT"));
+  assert.deepEqual(calls, ["approve:0"]);
+  assert.equal(await humanDecide(deps, 1, true), "paid");
+  assert.deepEqual(calls, ["approve:0", "approve:1"]);
+});
+test("duplicate detection: a different amount is not a duplicate", async () => {
+  const { store, deps, calls } = setup([req(0, "shop.testnet", 1, "inv-1"), req(1, "shop.testnet", 1.5, "inv-1")]);
+  store.setPolicy(policy);
+  await processAll(deps);
+  assert.deepEqual(calls, ["approve:0", "approve:1"]);
+});
+test("duplicate detection: the same payment after the window is judged on its own", async () => {
+  const pending = [req(0, "shop.testnet", 1, "inv-1")];
+  const { store, deps } = setup(pending);
+  store.setPolicy(policy);
+  await processAll(deps);
+  pending.push(req(1, "shop.testnet", 1, "inv-1"));
+  deps.now = () => Date.UTC(2026, 10, 5, 12, 11);
+  const out = await processAll(deps);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].verdict, "allow");
 });

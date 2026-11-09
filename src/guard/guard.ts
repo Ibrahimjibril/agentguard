@@ -7,6 +7,8 @@ import { scoreDestination } from "./scam.ts";
 import type { Risk } from "./scam.ts";
 import type { Store, Status } from "./store.ts";
 
+const DUPLICATE_WINDOW_MS = 10 * 60 * 1000; // identical payments inside this window go to a human
+
 export interface PendingReq { id: number; to: string; amount: string; memo: string }
 export interface ChainResult { ok: boolean; tx: string | null; error: string | null }
 export interface Chain {
@@ -33,9 +35,24 @@ export async function processRequest(d: Deps, r: PendingReq): Promise<Outcome | 
   const exists = await d.chain.accountExists(r.to).catch(() => null);
   const risk = scoreDestination(r.to, { exists }, { trusted, knownBad: d.knownBad });
 
-  const decision: Decision = policy
+  let decision: Decision = policy
     ? evaluate(policy, { to: r.to, amount: r.amount }, { spentToday: sumSpentToday(d.store.paidEntries(), now), riskScore: risk.score })
     : { verdict: "ask", reasons: [{ code: "NO_POLICY", verdict: "ask", message: "No active policy; human approval required." }] };
+
+  // A retried request becomes a new id on the vault. If an identical payment (same
+  // destination, amount and memo) was paid or queued moments ago, ask a human.
+  if (decision.verdict === "allow") {
+    const dup = d.store.recentSame(r.to, r.amount, r.memo, r.id, now - DUPLICATE_WINDOW_MS);
+    if (dup) {
+      decision = {
+        verdict: "ask",
+        reasons: [{
+          code: "DUPLICATE_RECENT", verdict: "ask",
+          message: "Same payment (request #" + dup.request_id + ") was " + (dup.status === "paid" ? "paid" : "queued") + " less than 10 minutes ago. A retry or a second purchase?",
+        }],
+      };
+    }
+  }
 
   let status: Status;
   let tx: string | null = null;
