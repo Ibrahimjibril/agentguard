@@ -40,9 +40,9 @@ export async function processRequest(d: Deps, r: PendingReq): Promise<Outcome | 
     : { verdict: "ask", reasons: [{ code: "NO_POLICY", verdict: "ask", message: "No active policy; human approval required." }] };
 
   // A retried request becomes a new id on the vault. If an identical payment (same
-  // destination, amount and memo) was paid or queued moments ago, ask a human.
+  // destination and amount, whatever the memo) was paid or queued moments ago, ask a human.
   if (decision.verdict === "allow") {
-    const dup = d.store.recentSame(r.to, r.amount, r.memo, r.id, now - DUPLICATE_WINDOW_MS);
+    const dup = d.store.recentSame(r.to, r.amount, r.id, now - DUPLICATE_WINDOW_MS);
     if (dup) {
       decision = {
         verdict: "ask",

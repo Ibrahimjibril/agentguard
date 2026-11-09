@@ -192,7 +192,7 @@ Prefer the terminal to the wizard? `node scripts/create-account.mjs YOURNAME.tes
 ### Tests
 
 ```bash
-npm test      # 93 unit tests: policy engine, rule compiler, scam check, Guard, API, setup wizard, agent client, LLM client
+npm test      # 94 unit tests: policy engine, rule compiler, scam check, Guard, API, setup wizard, agent client, LLM client
 ```
 
 The contract's 5 unit tests run in CI (`.github/workflows/contract.yml`).
@@ -204,7 +204,7 @@ The contract's 5 unit tests run in CI (`.github/workflows/contract.yml`).
 - **Testnet only.** Nothing has been deployed to mainnet or audited.
 - **The hosted checkpoint log is a replay.** It shows `web/public/demo-snapshot.json`, exported from a real testnet run with `scripts/export-snapshot.ts`.
 - **The hosted playground is a simulation.** It uses the real checker and live testnet reads, but it does not call the vault, sign anything or pay anyone. Approve and Decline on the hosted page are simulated in your browser only; real approval and payment need the self-hosted Guard (see Run it yourself).
-- **Duplicate requests go to a human.** Each `request_payment` gets its own id, so a retried request is a new request. If the same destination, amount and memo was paid or queued in the last 10 minutes, the Guard returns ASK (`DUPLICATE_RECENT`) instead of ALLOW. An agent that changes the memo on a retry is not caught; your rules and the vault's on-chain caps still bound the damage.
+- **Duplicate requests go to a human.** Each `request_payment` gets its own id, so a retried request is a new request. If a payment to the same destination for the same amount (whatever the memo) was paid or queued in the last 10 minutes, the Guard returns ASK (`DUPLICATE_RECENT`) instead of ALLOW, even for a trusted account. The check uses the Guard's own decision log, so it only knows what this Guard has decided. A retry with a different amount, or after 10 minutes, is judged on its own; your rules and the vault's on-chain caps still bound the damage.
 - **The scam check is heuristic.** It checks existence on chain, lookalikes of trusted accounts, a small known-bad list (`data/known-bad.json`, sample entries) and phishing-style keywords. It does not yet use account age or transaction history.
 - **One guardian.** The Guard holds a single full-access key for `guardian.<owner>` on the machine it runs on. The on-chain caps bound the damage if that key is lost. There is no multisig or TEE yet.
 - **`Paid` is written when `approve` runs.** The vault marks the request paid and counts it against the daily cap in the same call that starts the transfer. If the transfer then fails (for example the destination does not exist), the funds return to the vault but the status stays `Paid`. The Guard blocks non-existent named accounts by default, which avoids the common cause.

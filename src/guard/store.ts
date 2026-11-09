@@ -57,10 +57,10 @@ export function openStore(file = "guard.db") {
       db.prepare("UPDATE decisions SET status = ?, tx = ?, reasons = ?, updated = ? WHERE request_id = ?")
         .run(status, tx, JSON.stringify(reasons), now, id);
     },
-    recentSame(to: string, amount: string, memo: string, excludeId: number, since: number): DecisionRow | null {
+    recentSame(to: string, amount: string, excludeId: number, since: number): DecisionRow | null {
       const r = db.prepare(
-        "SELECT * FROM decisions WHERE to_account = ? AND amount = ? AND memo = ? AND request_id != ? AND ts >= ? AND status IN ('paid', 'awaiting_approval') ORDER BY ts DESC LIMIT 1",
-      ).get(to, amount, memo, excludeId, since);
+        "SELECT * FROM decisions WHERE to_account = ? AND amount = ? AND request_id != ? AND ts >= ? AND status IN ('paid', 'awaiting_approval') ORDER BY ts DESC LIMIT 1",
+      ).get(to, amount, excludeId, since);
       return r ? toRow(r) : null;
     },
     list(limit = 50): DecisionRow[] {

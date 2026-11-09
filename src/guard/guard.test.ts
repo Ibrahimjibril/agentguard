@@ -80,10 +80,10 @@ test("running twice never double-processes a request", async () => {
   assert.deepEqual(calls, ["approve:0"]);
 });
 test("daily limit uses the decision log", async () => {
-  const { store, deps } = setup([req(0, "shop.testnet", 1.5), req(1, "shop.testnet", 1.5), req(2, "shop.testnet", 1.5), req(3, "shop.testnet", 1.5), req(4, "shop.testnet", 1.5)]);
+  const { store, deps } = setup([req(0, "shop.testnet", 1.5), req(1, "shop.testnet", 1.4), req(2, "shop.testnet", 1.6), req(3, "shop.testnet", 1.3), req(4, "shop.testnet", 1.2)]);
   store.setPolicy({ ...policy, approval_threshold: null });
   const out = await processAll(deps);
-  assert.deepEqual(out.map((o) => o.status), ["paid", "paid", "paid", "paid", "rejected"]); // 4 x 1.5 = 6, the 5th exceeds
+  assert.deepEqual(out.map((o) => o.status), ["paid", "paid", "paid", "paid", "rejected"]); // 1.5+1.4+1.6+1.3 = 5.8, the 5th (1.2) exceeds 6; amounts differ so none is a duplicate
   assert.match(out[4].reasons.join(" "), /OVER_DAILY_LIMIT/);
 });
 test("no policy -> a human must decide", async () => {
@@ -139,4 +139,13 @@ test("duplicate detection: the same payment after the window is judged on its ow
   const out = await processAll(deps);
   assert.equal(out.length, 1);
   assert.equal(out[0].verdict, "allow");
+});
+
+test("duplicate detection: a retry with a changed memo (INV-1042-R) is still caught", async () => {
+  const { store, deps, calls } = setup([req(0, "shop.testnet", 1, "INV-1042"), req(1, "shop.testnet", 1, "INV-1042-R")]);
+  store.setPolicy(policy);
+  const out = await processAll(deps);
+  assert.equal(out[1].verdict, "ask");
+  assert.ok(out[1].reasons[0].startsWith("DUPLICATE_RECENT"));
+  assert.deepEqual(calls, ["approve:0"]);
 });
