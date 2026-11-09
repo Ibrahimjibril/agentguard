@@ -192,7 +192,7 @@ Prefer the terminal to the wizard? `node scripts/create-account.mjs YOURNAME.tes
 ### Tests
 
 ```bash
-npm test      # 94 unit tests: policy engine, rule compiler, scam check, Guard, API, setup wizard, agent client, LLM client
+npm test      # 97 tests (including 20,000 randomized rule checks and a prompt-injection test): policy engine, rule compiler, scam check, Guard, API, setup wizard, agent client, LLM client
 ```
 
 The contract's 5 unit tests run in CI (`.github/workflows/contract.yml`).
