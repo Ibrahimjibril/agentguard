@@ -23,6 +23,9 @@ export interface Deps {
   trusted: string[]; // always-trusted accounts (e.g. the owner)
   knownBad: string[];
   now?: () => number;
+  // Optional (src/guard/clearance.ts): is the agent certified by Clearance right now?
+  // true = certified, false = not, null = could not read. Unset = no certificate check.
+  certified?: () => Promise<boolean | null>;
 }
 
 export interface Outcome { id: number; verdict: string; status: Status; reasons: string[]; risk: Risk }
@@ -50,6 +53,19 @@ export async function processRequest(d: Deps, r: PendingReq): Promise<Outcome | 
           code: "DUPLICATE_RECENT", verdict: "ask",
           message: "Same payment (request #" + dup.request_id + ") was " + (dup.status === "paid" ? "paid" : "queued") + " less than 10 minutes ago. A retry or a second purchase?",
         }],
+      };
+    }
+  }
+
+  // With a Clearance check configured, auto-approve only while the agent's certificate is valid.
+  if (decision.verdict === "allow" && d.certified) {
+    const cert = await d.certified().catch(() => null);
+    if (cert !== true) {
+      decision = {
+        verdict: "ask",
+        reasons: [cert === false
+          ? { code: "AGENT_NOT_CERTIFIED", verdict: "ask", message: "The agent has no valid Clearance certificate (missing, expired or revoked); a human decides." }
+          : { code: "CERT_UNAVAILABLE", verdict: "ask", message: "Could not read the agent's Clearance certificate; failing safe to human approval." }],
       };
     }
   }

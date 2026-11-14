@@ -10,6 +10,7 @@ import { nearChain, readJson } from "../src/guard/chain.ts";
 import { startApp } from "../src/server/app.ts";
 import type { ApiDeps } from "../src/server/api.ts";
 import { vaultInfoReader } from "../src/server/vault.ts";
+import { parseClearance, clearanceReader } from "../src/guard/clearance.ts";
 import { llmFromEnv } from "../src/llm/client.ts";
 import { createOwner, deploySandbox, getStatus } from "../src/setup/setup.ts";
 import { realOps } from "../src/setup/near-ops.ts";
@@ -28,6 +29,15 @@ function loadGuard() {
   if (status.stage !== "deployed") return;
   const dep = readJson(path.join(dir, "deployment.json"));
   const key = readJson(path.join(dir, ".keys", `${dep.guardian}.json`)).privateKey;
+  // Read clearance.json before the Guard exists: a bad file must stop it, not leave it running unchecked.
+  let certified: ApiDeps["certified"];
+  const clearancePath = path.join(dir, "clearance.json");
+  if (fs.existsSync(clearancePath)) {
+    const c = parseClearance(readJson(clearancePath));
+    if (!c.ok) throw new Error("Invalid clearance.json: " + c.errors.join("; "));
+    certified = clearanceReader(c.config);
+    console.log(`Auto-approve only while ${c.config.agent} is certified (Clearance level ${c.config.level})`);
+  }
   guard = {
     store: openStore(path.join(dir, "guard.db")),
     chain: nearChain(dep, key),
@@ -35,6 +45,7 @@ function loadGuard() {
     knownBad: fs.existsSync("data/known-bad.json") ? readJson("data/known-bad.json") : [],
     llm,
     vaultInfo: vaultInfoReader(dep),
+    certified,
   };
   console.log(`Guarding ${dep.vault}`);
 }

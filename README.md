@@ -91,6 +91,24 @@ flowchart LR
 | Function-call access key | The agent's only key: `request_payment` on the vault, nothing else |
 | Own smart contract (Rust, `near-sdk` 5) | Holds funds, enforces hard per-payment and daily caps, pays only after the guardian approves |
 | Keyless account | The vault has **no access keys**: nobody can sign as the vault or upgrade it. It deploys and initialises in one atomic transaction |
+| Contract view call (optional) | Before it auto-approves, the Guard can read the agent's [Clearance](https://github.com/Selliksss/clearance) certificate on chain (`is_certified`); see below |
+
+### Optional: auto-approve only a certified agent
+
+[Clearance](https://github.com/Selliksss/clearance) crash-tests agents that pay (fake invoices, lookalike payees, "payment failed, retry") and records a revocable certificate in a NEAR contract. Put a `clearance.json` next to `deployment.json` (in `GUARD_DATA_DIR`), as in [`data/clearance.example.json`](data/clearance.example.json):
+
+```json
+{ "contract": "clearance-dev.testnet", "agent": "clearance-agent-v8.testnet", "signer": "lt-dopusk-ci-signer.testnet", "level": 2 }
+```
+
+Before it auto-approves a payment, the Guard then reads `is_certified(agent, signer, level)` on chain. If the agent has no valid certificate (never certified, expired, or revoked after an attack beat it), the payment goes to a human (`AGENT_NOT_CERTIFIED`); if the read fails, too (`CERT_UNAVAILABLE`). The check only ever turns an automatic "allow" into "ask": it cannot approve anything the policy, the scam check or the duplicate check would not. Without the file nothing changes. `signer` is whose certificates you trust; `lt-dopusk-ci-signer.testnet` is Clearance's GitHub Actions signer, whose key can only certify and revoke. `agent` is the account Clearance certified for the agent you run behind this vault (its prompt and model), not the vault's `agent.<owner>` key account; the Guard trusts you to name the right one.
+
+Run on testnet on Nov 14, 2026, the same vault and policy, only `clearance.json` differs:
+
+| `agent` in `clearance.json` | request | Guard | on chain |
+|---|---|---|---|
+| `clearance-agent-v8.testnet` (certified, level 2) | 0.2 NEAR to the shop | allowed, paid | #11 [`3quQnfUP…`](https://testnet.nearblocks.io/txns/3quQnfUPfA6sJ72Hi9TgmDc7d6sPbcqdDn3nJzrcsKm7) |
+| `clearance-agent-v7.testnet` (revoked on Nov 8) | 0.25 NEAR to the shop | `AGENT_NOT_CERTIFIED`, held for a human; the owner rejected it | #12 [`6CPEcmPT…`](https://testnet.nearblocks.io/txns/6CPEcmPT5uF6ZeeJWwo5PUgZR5bafVuMD1UDPYPTeaR9) |
 
 ## The hosted playground
 
@@ -192,7 +210,7 @@ Prefer the terminal to the wizard? `node scripts/create-account.mjs YOURNAME.tes
 ### Tests
 
 ```bash
-npm test      # 97 tests (including 20,000 randomized rule checks and a prompt-injection test): policy engine, rule compiler, scam check, Guard, API, setup wizard, agent client, LLM client
+npm test      # 104 tests (including 20,000 randomized rule checks and a prompt-injection test): policy engine, rule compiler, scam check, Guard, Clearance certificate check, API, setup wizard, agent client, LLM client
 ```
 
 The contract's 5 unit tests run in CI (`.github/workflows/contract.yml`).
