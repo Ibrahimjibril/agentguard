@@ -1,0 +1,6 @@
+{
+  "contract": "clearance-dev.testnet",
+  "agent": "clearance-agent-v8.testnet",
+  "signer": "lt-dopusk-ci-signer.testnet",
+  "level": 2
+}

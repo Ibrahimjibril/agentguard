@@ -8,19 +8,28 @@ import path from "node:path";
 import fs from "node:fs";
 import { openStore } from "../src/guard/store.ts";
 import { processAll, humanDecide } from "../src/guard/guard.ts";
+import type { Deps } from "../src/guard/guard.ts";
 import { nearChain, readJson } from "../src/guard/chain.ts";
 import { parsePolicy } from "../src/policy/policy.ts";
 import { fmtNear } from "../src/policy/policy.ts";
+import { parseClearance, clearanceReader } from "../src/guard/clearance.ts";
 
 const [cmd, arg] = process.argv.slice(2);
 const DIR = process.env.GUARD_DATA_DIR ?? ".";
 const store = openStore(process.env.GUARD_DB ?? path.join(DIR, "guard.db"));
 const dep = readJson(path.join(DIR, "deployment.json"));
 const key = readJson(path.join(DIR, ".keys", `${dep.guardian}.json`)).privateKey;
-const deps = {
+const deps: Deps = {
   store, chain: nearChain(dep, key), trusted: [dep.owner],
   knownBad: fs.existsSync("data/known-bad.json") ? readJson("data/known-bad.json") : [],
 };
+const clearancePath = path.join(DIR, "clearance.json");
+if (fs.existsSync(clearancePath)) {
+  const c = parseClearance(readJson(clearancePath));
+  if (!c.ok) { console.error("Invalid clearance.json:", c.errors.join("; ")); process.exit(1); }
+  deps.certified = clearanceReader(c.config);
+  console.log(`Auto-approve only while ${c.config.agent} is certified (Clearance level ${c.config.level})`);
+}
 const show = (o: any) => console.log(`#${o.id} ${o.verdict.toUpperCase()} -> ${o.status} (risk ${o.risk.score ?? "n/a"})\n    ${o.reasons.join("\n    ")}`);
 
 if (cmd === "policy") {
